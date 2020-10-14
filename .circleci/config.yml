@@ -3,9 +3,8 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.14
+    working_directory: /go/src/github.com/tufin/sabik
     steps:
       - checkout
-      - run:
-          name: Run unit tests
-          command: |
-            go test ./...
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...

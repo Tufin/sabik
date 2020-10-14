@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Test
-          command:
+          command: |
             go get -v -t -d ./...
-            script/testcov.sh
+            ./script/testcov.sh
             bash <(curl -s https://codecov.io/bash)

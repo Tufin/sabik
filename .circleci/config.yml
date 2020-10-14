@@ -6,9 +6,9 @@ jobs:
     working_directory: /go/src/github.com/tufin/sabik
     steps:
       - checkout
-      - run: go get -v -t -d ./...
-      - run: script/testcov.sh
       - run:
-          name: Upload coverage results
+          name: Test
           command:
+            go get -v -t -d ./...
+            script/testcov.sh
             bash <(curl -s https://codecov.io/bash)

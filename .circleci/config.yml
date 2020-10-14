@@ -7,4 +7,8 @@ jobs:
     steps:
       - checkout
       - run: go get -v -t -d ./...
-      - run: go test -v ./...
+      - run: script/testcov.sh
+      - run:
+          name: Upload coverage results
+          command:
+            bash <(curl -s https://codecov.io/bash)

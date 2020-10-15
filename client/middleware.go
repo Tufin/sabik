@@ -18,11 +18,13 @@ type Middleware struct {
 	project     string
 	serviceName string
 	tufinURL    string
+	enable      bool
 }
 
 const (
 	EnvKeyServiceName = "TUFIN_SERVICE_NAME"
 	EnvKeyTufinURL    = "TUFIN_URL"
+	EnvKeyMode        = "TUFIN_MODE"
 )
 
 func NewMiddleware() *Middleware {
@@ -32,16 +34,21 @@ func NewMiddleware() *Middleware {
 		project:     env.GetEnvOrExit(env.KeyProject),
 		serviceName: env.GetEnvOrExit(EnvKeyServiceName),
 		tufinURL:    env.GetEnvWithDefault(EnvKeyTufinURL, "https://persister-xiixymmvca-ew.a.run.app"),
+		enable:      isEnable(),
 	}
 }
 
 func (m *Middleware) Handle(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		recorder := NewResponseRecorder(w)
-		t := time.Now()
-		next.ServeHTTP(recorder, r)
-		report(m.domain, m.project, m.serviceName, m.tufinURL, recorder, r, t)
+		if m.enable {
+			recorder := NewResponseRecorder(w)
+			t := time.Now()
+			next.ServeHTTP(recorder, r)
+			report(m.domain, m.project, m.serviceName, m.tufinURL, recorder, r, t)
+		} else {
+			next.ServeHTTP(w, r)
+		}
 	})
 }
 
@@ -144,4 +151,9 @@ func getBody(r *http.Request) string {
 	defer common.CloseWithErrLog(r.Body)
 
 	return buf.String()
+}
+
+func isEnable() bool {
+
+	return env.GetEnvWithDefault(EnvKeyMode, "enable") == "enable"
 }

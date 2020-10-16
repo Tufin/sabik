@@ -34,7 +34,7 @@ func NewMiddleware() *Middleware {
 		project:     env.GetEnvOrExit(env.KeyProject),
 		serviceName: env.GetEnvOrExit(EnvKeyServiceName),
 		tufinURL:    env.GetEnvWithDefault(EnvKeyTufinURL, "https://persister-xiixymmvca-ew.a.run.app"),
-		enable:      isEnable(),
+		enable:      getEnable(),
 	}
 }
 
@@ -153,7 +153,7 @@ func getBody(r *http.Request) string {
 	return buf.String()
 }
 
-func isEnable() bool {
+func getEnable() bool {
 
 	return env.GetEnvWithDefault(EnvKeyMode, "enable") == "enable"
 }

@@ -22,9 +22,9 @@ type Middleware struct {
 }
 
 const (
-	EnvKeyServiceName = "TUFIN_SERVICE_NAME"
-	EnvKeyTufinURL    = "TUFIN_URL"
-	EnvKeyMode        = "TUFIN_MODE"
+	EnvKeyServiceName = "TUFIN_SABIK_SERVICE_NAME"
+	EnvKeyTufinURL    = "TUFIN_SABIK_URL"
+	EnvKeyEnable      = "TUFIN_SABIK_ENABLE"
 )
 
 func NewMiddleware() *Middleware {
@@ -155,5 +155,5 @@ func getBody(r *http.Request) string {
 
 func getEnable() bool {
 
-	return env.GetEnvWithDefault(EnvKeyMode, "enable") == "enable"
+	return env.GetEnvWithDefault(EnvKeyEnable, "false") == "true"
 }

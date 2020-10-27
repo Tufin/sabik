@@ -2,11 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 
 	"cloud.google.com/go/civil"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -41,6 +41,17 @@ func (l *HTTPLog) GetQueryString() (url.Values, error) {
 	}
 
 	return url.ParseQuery(l.QueryString)
+}
+
+func FromHeaders(header http.Header) string {
+
+	payload, err := json.Marshal(header)
+	if err != nil {
+		log.Errorf("failed to marshal headers '%+v' with '%v'", header, err)
+		return ""
+	}
+
+	return string(payload)
 }
 
 func (l *HTTPLog) GetResponseHeaders() http.Header {

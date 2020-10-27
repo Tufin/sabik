@@ -19,7 +19,7 @@ import (
 
 func TestNewMiddleware(t *testing.T) {
 
-	const domain, project, serviceName = "generic-bank", "retail", "customer"
+	const domain, project, serviceName, headerKey, headerValue = "generic-bank", "retail", "customer", "hola", "mundo"
 	const requestBody, responseBody = `{"cherry": true}`, `{"type": "coral"}`
 	parsedURL, err := url.Parse("/ping?hello=world&hola=mundo")
 	require.NoError(t, err)
@@ -36,6 +36,8 @@ func TestNewMiddleware(t *testing.T) {
 		requestHeaders := httpLog.GetRequestHeaders()
 		require.Equal(t, "application/json", requestHeaders["Content-Type"][0])
 		require.Equal(t, "me", requestHeaders["Test"][0])
+		responseHeaders := httpLog.GetResponseHeaders()
+		require.Equal(t, headerValue, responseHeaders[headerKey])
 		w.WriteHeader(http.StatusCreated)
 	}))
 	require.NoError(t, os.Setenv(env.KeyDomain, domain))
@@ -48,6 +50,7 @@ func TestNewMiddleware(t *testing.T) {
 	request.Header.Set("test", "me")
 	client.NewMiddleware().Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
+		w.Header().Add(headerKey, headerValue)
 		if _, err := io.WriteString(w, responseBody); err != nil {
 			log.Errorf("failed to write response body '%s' with '%v'", requestBody, err)
 		}

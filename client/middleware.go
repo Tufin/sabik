@@ -71,7 +71,7 @@ func toHTTPLog(domain string, project string, serviceName string, response *Resp
 		Source:          "",
 		StatusCode:      response.StatusCode,
 		ResponseBody:    response.Body.String(),
-		ResponseHeaders: "",
+		ResponseHeaders: api.FromHeaders(response.Header()),
 		Destination:     serviceName,
 		DestinationIP:   "",
 		DestinationPort: 0,

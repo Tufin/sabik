@@ -30,13 +30,13 @@ func TestNewMiddleware(t *testing.T) {
 		require.Len(t, payload["logs"], 1)
 		require.Equal(t, domain, httpLog.Domain)
 		require.Equal(t, project, httpLog.Project)
-		require.Equal(t, serviceName, httpLog.Destination)
+		require.Equal(t, serviceName, httpLog.Service)
 		require.Equal(t, requestBody, httpLog.RequestBody)
 		require.Equal(t, responseBody, httpLog.ResponseBody)
-		requestHeaders := httpLog.GetRequestHeaders()
+		requestHeaders := httpLog.RequestHeaders
 		require.Equal(t, "application/json", requestHeaders["Content-Type"][0])
 		require.Equal(t, "me", requestHeaders["Test"][0])
-		responseHeaders := httpLog.GetResponseHeaders()
+		responseHeaders := httpLog.ResponseHeaders
 		require.Equal(t, headerValue, responseHeaders[headerKey])
 		w.WriteHeader(http.StatusCreated)
 	}))

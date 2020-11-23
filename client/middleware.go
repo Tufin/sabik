@@ -54,29 +54,22 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 
 func toHTTPLog(domain string, project string, serviceName string, response *ResponseRecorder, request *http.Request, t time.Time) (*api.HTTPLog, error) {
 
-	requestHeader, err := common.StringHeader(request.Header)
-	if err != nil {
-		return nil, err
-	}
-
 	return &api.HTTPLog{
 		Domain:          domain,
 		Project:         project,
 		Time:            civil.DateTimeOf(t),
-		URI:             request.URL.Path,
-		QueryString:     request.URL.RawQuery,
+		Scheme:          request.URL.Scheme,
+		Host:            request.URL.Host,
+		Path:            request.URL.Path,
+		QueryString:     request.URL.Query(),
 		Method:          request.Method,
 		RequestBody:     getBody(request),
-		RequestHeaders:  requestHeader,
-		Source:          "",
+		RequestHeaders:  request.Header,
 		StatusCode:      response.StatusCode,
 		ResponseBody:    response.Body.String(),
-		ResponseHeaders: api.FromHeaders(response.Header()),
-		Destination:     serviceName,
-		DestinationIP:   "",
-		DestinationPort: 0,
+		ResponseHeaders: response.Header(),
+		Service:         serviceName,
 		Protocol:        request.Proto,
-		Client:          "",
 		Origin:          api.OriginGoMiddleware,
 	}, nil
 }
@@ -94,11 +87,11 @@ func report(domain string, project string, serviceName string, tufinURL string, 
 		log.Errorf("failed to marshal HTTPLog with '%v'", err)
 	} else {
 		if response, err := http.Post(tufinURL, "application/json", bytes.NewReader(body)); err != nil {
-			log.Errorf("failed to send HTTPLog '%s' to '%s' with '%v'", httpLog.URI, tufinURL, err)
+			log.Errorf("failed to send HTTPLog '%s' to '%s' with '%v'", httpLog.Path, tufinURL, err)
 		} else if response.StatusCode != http.StatusCreated {
-			log.Errorf("failed to send HTTPLog '%s' with '%s'", httpLog.URI, response.Status)
+			log.Errorf("failed to send HTTPLog '%s' with '%s'", httpLog.Path, response.Status)
 		} else {
-			log.Infof("sent HTTPLog '%s'", httpLog.URI)
+			log.Infof("sent HTTPLog '%s'", httpLog.Path)
 		}
 	}
 }

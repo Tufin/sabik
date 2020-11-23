@@ -1,76 +1,41 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/url"
 
 	"cloud.google.com/go/civil"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
-	OriginGoMiddleware = "GoMiddleware"
+	OriginAWSAPIGateway   = "AWSAPIGateway"
+	OriginIstioAccessLogs = "IstioAccessLogs"
+	OriginIstioEnvoyLua   = "IstioEnvoyLua"
+	OriginNginx           = "Nginx"
+	OriginGoMiddleware    = "GoMiddleware"
 )
 
 type HTTPLog struct {
-	Domain          string         `bigquery:"domain" json:"domain"`
-	Project         string         `bigquery:"project" json:"project"`
-	Time            civil.DateTime `bigquery:"time" json:"time"`
-	URI             string         `bigquery:"uri" json:"uri"`
-	QueryString     string         `bigquery:"query_string" json:"query_string"`
-	Method          string         `bigquery:"request_method" json:"request_method"`
-	RequestBody     string         `bigquery:"request_body" json:"request_body"`
-	RequestHeaders  string         `bigquery:"request_headers" json:"request_headers"`
-	Source          string         `bigquery:"source" json:"source"`
-	StatusCode      int            `bigquery:"status_code" json:"status_code"`
-	ResponseBody    string         `bigquery:"response_body" json:"response_body"`
-	ResponseHeaders string         `bigquery:"response_headers" json:"response_headers"`
-	Destination     string         `bigquery:"destination" json:"destination"`
-	DestinationIP   string         `bigquery:"destination_ip" json:"destination_ip"`
-	DestinationPort int            `bigquery:"destination_port" json:"destination_port"`
-	Protocol        string         `bigquery:"protocol" json:"protocol"`
-	Client          string         `bigquery:"client" json:"client"`
-	Origin          string         `bigquery:"origin" json:"origin"`
+	Domain          string         `json:"domain"`
+	Project         string         `json:"project"`
+	Time            civil.DateTime `json:"time"`
+	Scheme          string         `json:"scheme"`
+	Host            string         `json:"host"` // host or host:port
+	Path            string         `json:"path"`
+	QueryString     url.Values     `json:"query_string"` // parsed (not encoded)
+	Method          string         `json:"method"`
+	RequestBody     string         `json:"request_body"`
+	RequestHeaders  http.Header    `json:"request_headers"` // canonical format
+	StatusCode      int            `json:"status_code"`
+	ResponseBody    string         `json:"response_body"`
+	ResponseHeaders http.Header    `json:"response_headers"` // canonical format
+	Service         string         `json:"service"`
+	Protocol        string         `json:"protocol"`
+	Origin          string         `json:"origin"`
 }
 
-func (l *HTTPLog) GetQueryString() (url.Values, error) {
+func (l *HTTPLog) GetRequestCookies() []*http.Cookie {
 
-	if l.QueryString == "" {
-		return url.Values{}, nil
-	}
-
-	return url.ParseQuery(l.QueryString)
-}
-
-func FromHeaders(header http.Header) string {
-
-	payload, err := json.Marshal(header)
-	if err != nil {
-		log.Errorf("failed to marshal headers '%+v' with '%v'", header, err)
-		return ""
-	}
-
-	return string(payload)
-}
-
-func (l *HTTPLog) GetResponseHeaders() http.Header {
-
-	return toHTTPHeader(l.ResponseHeaders)
-}
-
-func (l *HTTPLog) GetRequestHeaders() http.Header {
-
-	return toHTTPHeader(l.RequestHeaders)
-}
-
-func toHTTPHeader(headers string) http.Header {
-
-	var ret http.Header
-	err := json.Unmarshal([]byte(headers), &ret)
-	if err != nil {
-		log.Fatalf("failed to unmarshal HTTPLog headers '%s' into 'http.Header' with '%v'", headers, err)
-	}
-
-	return ret
+	request := http.Request{Header: l.RequestHeaders}
+	return request.Cookies()
 }

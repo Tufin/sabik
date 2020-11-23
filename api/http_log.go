@@ -34,9 +34,3 @@ type HTTPLog struct {
 	Protocol        string         `json:"protocol"`
 	Origin          string         `json:"origin"`
 }
-
-func (l *HTTPLog) GetRequestCookies() []*http.Cookie {
-
-	request := http.Request{Header: l.RequestHeaders}
-	return request.Cookies()
-}

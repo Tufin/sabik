@@ -26,6 +26,7 @@ type HTTPLog struct {
 	Method          string         `json:"method"`
 	RequestBody     string         `json:"request_body"`
 	RequestHeaders  http.Header    `json:"request_headers"` // canonical format
+	Cookies         []*http.Cookie `json:"cookies"`
 	StatusCode      int            `json:"status_code"`
 	ResponseBody    string         `json:"response_body"`
 	ResponseHeaders http.Header    `json:"response_headers"` // canonical format

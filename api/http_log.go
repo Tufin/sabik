@@ -34,3 +34,19 @@ type HTTPLog struct {
 	Protocol        string         `json:"protocol"`
 	Origin          string         `json:"origin"`
 }
+
+var originResponses = map[string]bool{
+	OriginAWSAPIGateway:   true,
+	OriginIstioAccessLogs: true,
+	OriginIstioEnvoyLua:   true,
+	OriginNginx:           false,
+	OriginGoMiddleware:    true,
+}
+
+func OriginHasResponse(origin string) bool {
+	if r, ok := originResponses[origin]; ok {
+		return r
+	}
+
+	return true
+}

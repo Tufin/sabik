@@ -88,7 +88,7 @@ func report(domain string, project string, serviceName string, tufinURL string, 
 	} else {
 		if response, err := http.Post(tufinURL, "application/json", bytes.NewReader(body)); err != nil {
 			log.Errorf("failed to send HTTPLog '%s' to '%s' with '%v'", httpLog.Path, tufinURL, err)
-		} else if response.StatusCode != http.StatusCreated {
+		} else if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 			log.Errorf("failed to send HTTPLog '%s' with '%s'", httpLog.Path, response.Status)
 		} else {
 			log.Infof("sent HTTPLog '%s'", httpLog.Path)

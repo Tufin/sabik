@@ -48,7 +48,7 @@ func TestNewMiddleware(t *testing.T) {
 	require.NoError(t, err)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("test", "me")
-	client.NewMiddleware().Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	client.CreateMiddleware().Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		w.Header().Add(headerKey, headerValue)
 		if _, err := io.WriteString(w, responseBody); err != nil {

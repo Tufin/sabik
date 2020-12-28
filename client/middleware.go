@@ -13,7 +13,26 @@ import (
 	"github.com/tufin/sabik/common/env"
 )
 
-type Middleware struct {
+const (
+	EnvKeyServiceName = "TUFIN_SABIK_SERVICE_NAME"
+	EnvKeyTufinURL    = "TUFIN_SABIK_URL"
+	EnvKeyEnable      = "TUFIN_SABIK_ENABLE"
+)
+
+type Middleware interface {
+	Handle(next http.Handler) http.Handler
+}
+
+type EmptyMiddleware struct{}
+
+func (sm *EmptyMiddleware) Handle(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+	})
+}
+
+type SabikMiddleware struct {
 	domain      string
 	project     string
 	serviceName string
@@ -21,31 +40,25 @@ type Middleware struct {
 	enable      bool
 }
 
-const (
-	EnvKeyServiceName = "TUFIN_SABIK_SERVICE_NAME"
-	EnvKeyTufinURL    = "TUFIN_SABIK_URL"
-	EnvKeyEnable      = "TUFIN_SABIK_ENABLE"
-)
+func newSabikMiddleware() Middleware {
 
-func NewMiddleware() *Middleware {
-
-	return &Middleware{
+	return &SabikMiddleware{
 		domain:      env.GetEnvOrExit(env.KeyDomain),
 		project:     env.GetEnvOrExit(env.KeyProject),
 		serviceName: env.GetEnvOrExit(EnvKeyServiceName),
 		tufinURL:    env.GetEnvWithDefault(EnvKeyTufinURL, "https://persister-xiixymmvca-ew.a.run.app"),
-		enable:      getEnable(),
+		enable:      isEnable(),
 	}
 }
 
-func (m *Middleware) Handle(next http.Handler) http.Handler {
+func (sm *SabikMiddleware) Handle(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if m.enable {
+		if sm.enable {
 			recorder := NewResponseRecorder(w)
 			t := time.Now()
 			next.ServeHTTP(recorder, r)
-			report(m.domain, m.project, m.serviceName, m.tufinURL, recorder, r, t)
+			report(sm.domain, sm.project, sm.serviceName, sm.tufinURL, recorder, r, t)
 		} else {
 			next.ServeHTTP(w, r)
 		}
@@ -91,7 +104,7 @@ func report(domain string, project string, serviceName string, tufinURL string, 
 		} else if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 			log.Errorf("failed to send HTTPLog '%s' with '%s'", httpLog.Path, response.Status)
 		} else {
-			log.Infof("sent HTTPLog '%s'", httpLog.Path)
+			log.Infof("sent HTTPLog '%+v'", *httpLog)
 		}
 	}
 }
@@ -144,9 +157,4 @@ func getBody(r *http.Request) string {
 	defer common.CloseWithErrLog(r.Body)
 
 	return buf.String()
-}
-
-func getEnable() bool {
-
-	return env.GetEnvWithDefault(EnvKeyEnable, "false") == "true"
 }

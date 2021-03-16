@@ -32,7 +32,6 @@ type HTTPLog struct {
 	ResponseHeaders http.Header    `json:"response_headers"` // canonical format
 	Service         string         `json:"service"`
 	Protocol        string         `json:"protocol"`
-	Connection      string         `json:"connection"`
 	Origin          string         `json:"origin"`
 }
 

@@ -51,3 +51,47 @@ func OriginHasResponse(origin string) bool {
 
 	return true
 }
+
+func (httpLog *HTTPLog) Clone() *HTTPLog {
+	clone := *httpLog
+
+	clone.QueryString = cloneURLValues(httpLog.QueryString)
+	clone.RequestHeaders = httpLog.RequestHeaders.Clone()
+	clone.Cookies = cloneCookies(httpLog.Cookies)
+	clone.ResponseHeaders = httpLog.ResponseHeaders.Clone()
+
+	return &clone
+}
+
+func cloneURLValues(v url.Values) url.Values {
+	if v == nil {
+		return nil
+	}
+	// http.Header and url.Values have the same representation, so temporarily
+	// treat it like http.Header, which does have a clone:
+	return url.Values(http.Header(v).Clone())
+}
+
+func cloneCookies(cookies []*http.Cookie) []*http.Cookie {
+	if cookies == nil {
+		return nil
+	}
+
+	result := make([]*http.Cookie, len(cookies))
+
+	for i, cookie := range cookies {
+		if cookie == nil {
+			continue
+		}
+
+		newCookie := *cookie
+		result[i] = &newCookie
+
+		if cookie.Unparsed != nil {
+			result[i].Unparsed = make([]string, len(cookie.Unparsed))
+			copy(result[i].Unparsed, cookie.Unparsed)
+		}
+	}
+
+	return result
+}

@@ -30,7 +30,7 @@ type HTTPLog struct {
 	StatusCode      int            `json:"status_code"`
 	ResponseBody    string         `json:"response_body"`
 	ResponseHeaders http.Header    `json:"response_headers"` // canonical format
-	RequestTime     civil.DateTime `json:"request_time"`     // latency
+	RequestTime     int64          `json:"request_time"`     // latency
 	Service         string         `json:"service"`
 	Protocol        string         `json:"protocol"`
 	Connection      string         `json:"connection"`

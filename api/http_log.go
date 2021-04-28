@@ -29,6 +29,7 @@ type HTTPLog struct {
 	Cookies         []*http.Cookie `json:"cookies"`
 	StatusCode      int            `json:"status_code"`
 	ResponseBody    string         `json:"response_body"`
+	BytesSent       int64          `json:"bytes_sent"`
 	ResponseHeaders http.Header    `json:"response_headers"` // canonical format
 	RequestTime     int64          `json:"request_time"`     // latency
 	Service         string         `json:"service"`

@@ -8,11 +8,14 @@ import (
 )
 
 const (
+	OriginHeaderKey = "X-Tufin-Origin"
+
 	OriginAWSAPIGateway   = "AWSAPIGateway"
 	OriginIstioAccessLogs = "IstioAccessLogs"
 	OriginIstioEnvoyLua   = "IstioEnvoyLua"
 	OriginNginx           = "Nginx"
 	OriginGoMiddleware    = "GoMiddleware"
+	OriginMetadata        = "Metadata"
 )
 
 type HTTPLog struct {
@@ -44,6 +47,7 @@ var originResponses = map[string]bool{
 	OriginIstioEnvoyLua:   true,
 	OriginNginx:           false,
 	OriginGoMiddleware:    true,
+	OriginMetadata:        true,
 }
 
 func OriginHasResponse(origin string) bool {
